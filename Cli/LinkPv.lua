@@ -845,6 +845,3 @@ return {
   run = run
 }
 end
---Iwas Lazy So I Just Removed Patterns And Didn't Del Junk Items
-    --https://github.com/ThisIsArman
-    --Telegram.me/ThisIsArman
