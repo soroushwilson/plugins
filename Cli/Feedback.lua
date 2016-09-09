@@ -1,5 +1,4 @@
-    --https://github.com/ThisIsArman
-    --Telegram.me/ThisIsArman
+
 do
  function run(msg, matches)
  
@@ -27,5 +26,4 @@ do
   },
   run = run
  }
-     --https://github.com/ThisIsArman
-    --Telegram.me/ThisIsArman
+
