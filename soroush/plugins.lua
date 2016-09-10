@@ -22,6 +22,7 @@ local function plugin_exists( name )
 end
 
 local function list_all_plugins(only_enabled)
+  local tmp = '\n\n@specialteam_ch'
   local text = ''
   local nsum = 0
   for k, v in pairs( plugins_names( )) do
@@ -31,18 +32,18 @@ local function list_all_plugins(only_enabled)
     nact = 0
     -- Check if is enabled
     for k2, v2 in pairs(_config.enabled_plugins) do
-      if v == v2..'.lua' then
-        status = '✔'
+      if v == v2..'.lua' then 
+        status = '✔' 
       end
       nact = nact+1
     end
     if not only_enabled or status == '✔' then
       -- get the name
       v = string.match (v, "(.*)%.lua")
-      text = text..nsum..'. '..v..'  '..status..'\n'
+      text = text..nsum..'.'..status..' '..v..' \n'
     end
   end
-  local text = text..'\n '..nsum..' پلاگین نصب\n'..nact..' پلاگین فعال و '..nsum-nact..'غیرفعال است'
+  local text = text..'\n\n'..nsum..' پلاگین های نصب شده\n\n'..nact..' پلاگین های فعال\n\n'..nsum-nact..' پلاگین های غیرفعال'..tmp
   return text
 end
 
@@ -56,18 +57,18 @@ local function list_plugins(only_enabled)
     nact = 0
     -- Check if is enabled
     for k2, v2 in pairs(_config.enabled_plugins) do
-      if v == v2..'.lua' then
-        status = '✔'
+      if v == v2..'.lua' then 
+        status = '✔' 
       end
       nact = nact+1
     end
     if not only_enabled or status == '✔' then
       -- get the name
       v = string.match (v, "(.*)%.lua")
-      text = text..v..'  '..status..'\n'
+     -- text = text..v..'  '..status..'\n'
     end
   end
-  local text = text..'\n'..nact..' پلاگین فعال از '..nsum..'پلاگین موجود در سرور.'
+  local text = text..'\nپلاگین ها بروزرسانی شدند\n\n'..nact..' پلاگین های فعال\n'..nsum..' پلاگین های نصب شده\n'
   return text
 end
 
@@ -82,7 +83,7 @@ local function enable_plugin( plugin_name )
   print('checking if '..plugin_name..' exists')
   -- Check if plugin is enabled
   if plugin_enabled(plugin_name) then
-    return 'پلاگین '..plugin_name..' فعال شد'
+    return 'پلاگین[ '..plugin_name..' ] فعال است'
   end
   -- Checks if plugin exists
   if plugin_exists(plugin_name) then
@@ -93,29 +94,29 @@ local function enable_plugin( plugin_name )
     -- Reload the plugins
     return reload_plugins( )
   else
-    return 'پلاگین '..plugin_name..'یافت نشد'
+    return 'پلاگین [ '..plugin_name..' ]وجود ندارد'
   end
 end
 
 local function disable_plugin( name, chat )
   -- Check if plugins exists
   if not plugin_exists(name) then
-    return 'پلاگین '..name..'یافت نشد'
+    return 'پلاگین [ '..name..' ]وجود ندارد'
   end
   local k = plugin_enabled(name)
   -- Check if plugin is enabled
   if not k then
-    return 'پلاگین '..name..' غیرفعال است'
+    return 'پلاگین[ '..name..' ] فعال نیست'
   end
   -- Disable and reload
   table.remove(_config.enabled_plugins, k)
   save_config( )
-  return reload_plugins(true)
+  return reload_plugins(true)    
 end
 
 local function disable_plugin_on_chat(receiver, plugin)
   if not plugin_exists(plugin) then
-    return "پلاگین یافت نشد"
+    return "پلاگین وجود ندارد"
   end
 
   if not _config.disabled_plugin_on_chat then
@@ -129,12 +130,12 @@ local function disable_plugin_on_chat(receiver, plugin)
   _config.disabled_plugin_on_chat[receiver][plugin] = true
 
   save_config()
-  return 'پلاگین '..plugin..' در این گروه غیرفعال شد'
+  return "در این گروه غیرفعال شد"
 end
 
 local function reenable_plugin_on_chat(receiver, plugin)
   if not _config.disabled_plugin_on_chat then
-    return 'این پلاگین غیرفعال است'
+    return 'There aren\'t any disabled plugins'
   end
 
   if not _config.disabled_plugin_on_chat[receiver] then
@@ -142,47 +143,51 @@ local function reenable_plugin_on_chat(receiver, plugin)
   end
 
   if not _config.disabled_plugin_on_chat[receiver][plugin] then
-    return 'Tاین پلاگین غیر فعال نیست'
+    return 'این پلاگین غیرفعال نیست'
   end
 
   _config.disabled_plugin_on_chat[receiver][plugin] = false
   save_config()
-  return 'پلاگین '..plugin..' دوباره فعال شد'
+  return ' پلاگین [ '..plugin..' ] دوباره فعال شد'
 end
 
 local function run(msg, matches)
-  -- Show the available plugins
-  if matches[1] == 'plug' and is_sudo(msg) then --after changed to moderator mode, set only sudo
+  -- Show the available plugins 
+  if matches[1] == 'pl' and is_sudo(msg) then --after changed to moderator mode, set only sudo
     return list_all_plugins()
   end
 
   -- Re-enable a plugin for this chat
-  if matches[1] == '+' and matches[3] == 'chat' and is_owner(msg) then
+  if matches[1] == '+' and matches[3] == 'chat' then
+      if is_momod(msg) then
     local receiver = get_receiver(msg)
     local plugin = matches[2]
     print("enable "..plugin..' on this chat')
     return reenable_plugin_on_chat(receiver, plugin)
   end
+    end
 
   -- Enable a plugin
   if matches[1] == '+' and is_sudo(msg) then --after changed to moderator mode, set only sudo
+      if is_momod(msg) then
     local plugin_name = matches[2]
     print("enable: "..matches[2])
     return enable_plugin(plugin_name)
   end
-
+    end
   -- Disable a plugin on a chat
-  if matches[1] == '-' and matches[3] == 'chat' and is_owner(msg) then
+  if matches[1] == '-' and matches[3] == 'chat' then
+      if is_momod(msg) then
     local plugin = matches[2]
     local receiver = get_receiver(msg)
     print("disable "..plugin..' on this chat')
     return disable_plugin_on_chat(receiver, plugin)
   end
-
+    end
   -- Disable a plugin
   if matches[1] == '-' and is_sudo(msg) then --after changed to moderator mode, set only sudo
     if matches[2] == 'plugins' then
-    	return 'این پلاگین نمیتواند غیر فعال شود'
+    	return 'This plugin can\'t be disabled'
     end
     print("disable: "..matches[2])
     return disable_plugin(matches[2])
@@ -192,28 +197,39 @@ local function run(msg, matches)
   if matches[1] == '*' and is_sudo(msg) then --after changed to moderator mode, set only sudo
     return reload_plugins(true)
   end
+  if matches[1] == 'reload' and is_sudo(msg) then --after changed to moderator mode, set only sudo
+    return reload_plugins(true)
+  end
 end
 
 return {
-  description = "Plugin to manage other plugins. Enable, disable or reload.",
+  description = "Plugin to manage other plugins. Enable, disable or reload.", 
   usage = {
       moderator = {
-          "plug - [plugin] [chat] : غیرفعال کردن یک پلاگین خاص در یک گروه",
-          "plug + [plugin] [chat] : فعال کردن یک پلاگین خاص در گروه",
+          "!pl - [plugin] chat : disable plugin only this chat.",
+          "!pl + [plugin] chat : enable plugin only this chat.",
           },
       sudo = {
-          "plug :نمایش همه پلاگین ها",
-          "plug + [plugin] : فعالسازی پلاگین مورد نظر.",
-          "plug - [plugin] : غیرفعالسازی پلاگین موردنظر",
-          "plug * : فعال شدن همه پلاگین ها" },
+          "!pl : list all plugins.",
+          "!pl + [plugin] : enable plugin.",
+          "!pl - [plugin] : disable plugin.",
+          "!pl * : reloads all plugins." },
           },
   patterns = {
-    "^plug$",
-    "^plug (+) ([%w_%.%-]+)$",
-    "^plug (-) ([%w_%.%-]+)$",
-    "^plug (+) ([%w_%.%-]+) (chat)",
-    "^plug (-) ([%w_%.%-]+) (chat)",
-    "^plug (*)$" },
+    "^(pl)$",
+    "^pl? (+) ([%w_%.%-]+)$",
+    "^pl? (-) ([%w_%.%-]+)$",
+    "^pl? (+) ([%w_%.%-]+) (chat)",
+    "^pl? (-) ([%w_%.%-]+) (chat)",
+    "^pl? (*)$",
+    "^[!/#](pl)$",
+    "^[!/#]pl? (+) ([%w_%.%-]+)$",
+    "^[!/#]pl? (-) ([%w_%.%-]+)$",
+    "^[!/#]pl? (+) ([%w_%.%-]+) (chat)",
+    "^[!/#]pl? (-) ([%w_%.%-]+) (chat)",
+    "^[!/#]pl? (*)$",
+    "^!(reload)$"
+    },
   run = run,
   moderated = true, -- set to moderator mode
   --privileged = true

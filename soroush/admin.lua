@@ -150,6 +150,7 @@ local function reload_plugins( )
   return load_plugins()
 end
 
+
 local function run(msg,matches)
     local receiver = get_receiver(msg)
     local group = msg.to.id
@@ -181,36 +182,43 @@ local function run(msg,matches)
     	return
     end
     if matches[1] == "pm" then
-    	local text = matches[3]
-    	send_large_msg("user#id"..matches[2], text)
-    	return "پیام با موفقیت ارسال شد"
+    	local text = "Message From "..(msg.from.username or msg.from.last_name).."\n\nMessage : "..matches[3]
+    	send_large_msg("user#id"..matches[2],text)
+    	return "Message has been sent"
     end
     
     if matches[1] == "pmblock" then
+	if type(msg.reply_id) ~="nil" and is_admin1(msg) then
+     msgr = get_message(msg.reply_id,ban_by_reply_admins, false)
+    end
     	if is_admin2(matches[2]) then
-    		return "شما نمیتوانید ادمین را بلاک کنید"
+    		return "You can't block admins"
     	end
-    	block_user("user#id"..matches[2], ok_cb, false)
-    	return "بلاک شد"
+    	block_user("user#id"..matches[2],ok_cb,false)
+    	return "User blocked"
     end
+	--[[if matches[1] == "pmblock" then
+    if type(msg.reply_id) ~="nil" and is_admin1(msg) then
+      return get_message(msg.reply_id, block_by_reply, false)
+    end
+  end]]
     if matches[1] == "pmunblock" then
-    	unblock_user("user#id"..matches[2], ok_cb, false)
-    	return "انبلاک شد"
+    	unblock_user("user#id"..matches[2],ok_cb,false)
+    	return "User unblocked"
     end
-    if matches[1] == "import" then --join by group link
+    if matches[1] == "import" then--join by group link
     	local hash = parsed_url(matches[2])
-    	import_chat_link(hash, ok_cb, false)
-		return 'من رفتم 😐\nبابایی تو هم بیا 😶'
+    	import_chat_link(hash,ok_cb,false)
     end
     if matches[1] == "contactlist" then
-	    if not is_sudo(msg) then -- Sudo only
-    		return '😒لیست مخاطبی من به تو چه ربطی داره ؟ کونییی\nفقط میدمش بابام'
+	    if not is_sudo(msg) then-- Sudo only
+    		return
     	end
       get_contact_list(get_contact_list_callback, {target = msg.from.id})
-      return "لیست مخاطبین به pv ارسال شد"
+      return "I've sent contact list with both json and text format to your private"
     end
     if matches[1] == "delcontact" then
-	    if not is_sudo(msg) then -- Sudo only
+	    if not is_sudo(msg) then-- Sudo only
     		return
     	end
       del_contact("user#id"..matches[2],ok_cb,false)
@@ -221,7 +229,7 @@ local function run(msg,matches)
     first_name = matches[3]
     last_name = matches[4]
     add_contact(phone, first_name, last_name, ok_cb, false)
-   return "شماره تلفن +"..matches[2].." به مخاطبین افزوده شد"
+   return "User With Phone +"..matches[2].." has been added"
 end
  if matches[1] == "sendcontact" and is_sudo(msg) then
     phone = matches[2]
@@ -263,14 +271,14 @@ end
 		receiver = get_receiver(msg)
 		reload_plugins(true)
 		post_msg(receiver, "Reloaded!", ok_cb, false)
-		return "بازیابی مجدد انجام شد🔄"
+		return "Reloaded!"
 	end
 	--[[*For Debug*
 	if matches[1] == "vardumpmsg" and is_admin1(msg) then
 		local text = serpent.block(msg, {comment=false})
 		send_large_msg("channel#id"..msg.to.id, text)
 	end]]
-	if matches[1] == 'updateid' then
+	if matches[1] == 'upid' then
 		local data = load_data(_config.moderation.data)
 		local long_id = data[tostring(msg.to.id)]['long_id']
 		if not long_id then
@@ -306,30 +314,21 @@ local function pre_process(msg)
 end
 
 return {
+usage = "این پلاگین مخصوص ادمین های این ربات است".."\n دستورات :\npm ID text برای ارسال پیام به شخصی \nimport GPlink/SGPlink برای دعوت ربات با لینک\nupid برای بروز کردن ایدی گروه"
+.."\naddlog/remlog \ntyping (on|off) برای فعال یا غیر فعال سازی تایپ کردن ربات",
   patterns = {
-	"^[#!/](pm) (%d+) (.*)$",
-	"^[#!/](import) (.*)$",
-	"^[#!/](pmunblock) (%d+)$",
-	"^[#!/](pmblock) (%d+)$",
-	"^[#!/](markread) (on)$",
-	"^[#!/](markread) (off)$",
-	"^[#!/](setbotphoto)$",
-	"^[#!/](contactlist)$",
-	"^[#!/](dialoglist)$",
-	"^[#!/](delcontact) (%d+)$",
-	"^[#!/](addcontact) (.*) (.*) (.*)$", 
-	"^[#!/](sendcontact) (.*) (.*) (.*)$",
-	"^[#!/](mycontact)$",
-	"^[#/!](reload)$",
-	"^[#/!](updateid)$",
-	"^[#/!](sync_gbans)$",
-	"^[#/!](addlog)$",
-	"^[#/!](remlog)$",
-	"%[(photo)%]",
+	"^(pm) (%d+) (.*)$",
+	"^(import) (.*)$",
+	"^(pmunblock) (%d+)$",
+	"^(pmblock) (%d+)$",
+	"^(setbotphoto)$",
+	"^(dialoglist)$",
+	"^(upid)$",
+	"^(addlog)$",
+	"^(remlog)$",
+	"^(typing) (on)$",
+	"^(typing) (off)$"
   },
   run = run,
   pre_process = pre_process
 }
---By @imandaneshi :)
---https://github.com/SEEDTEAM/TeleSeed/blob/test/plugins/admin.lua
----Modified by @Rondoozle for supergroups

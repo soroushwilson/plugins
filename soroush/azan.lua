@@ -1,4 +1,11 @@
+--[[
 
+#
+#     @GPMOD
+#   @Dragon_Born
+#      
+
+]]
 do
 function run_bash(str)
     local cmd = io.popen(str)
@@ -55,7 +62,7 @@ function run(msg, matches)
 	redis:incr(hash)
 	local receiver	= get_receiver(msg)
 	local city = matches[1]
-	if matches[1] == 'azan' then
+	if matches[1] == 'praytime' then
 	city = 'Tehran'
 	end
 	local lat,lng,url	= get_staticmap(city)
@@ -71,7 +78,7 @@ function run(msg, matches)
 	  text = text..'\nغروب آفتاب: '..data.Sunset
 	  text = text..'\nاذان مغرب: '..data.Maghrib
 	  text = text..'\nعشاء : '..data.Isha
-	  text = text..'\n\n@cruel_channel'
+	  text = text..'\n\n@specialteam_ch'
 	if string.match(text, '0') then text = string.gsub(text, '0', '۰') end
 	if string.match(text, '1') then text = string.gsub(text, '1', '۱') end
 	if string.match(text, '2') then text = string.gsub(text, '2', '۲') end
@@ -86,7 +93,7 @@ function run(msg, matches)
 end
 
 return {
-  patterns = {"^[Aa]zan (.*)$","^(azan)$","^اذان (.*)$"}, 
+  patterns = {"^[/!][Pp]raytime (.*)$","^[/!](praytime)$"}, 
   run = run 
 }
 

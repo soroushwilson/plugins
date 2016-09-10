@@ -412,8 +412,16 @@ local function show_group_settings(msg, data, target)
 			data[tostring(target)]['settings']['public'] = 'no'
 		end
 	end
+local expiretime = redis:hget('expiretime', get_receiver(msg))
+    local expire = ''
+  if not expiretime then
+  expire = expire..'تاریخ ست نشده است'
+  else
+   local now = tonumber(os.time())
+   expire =  expire..math.floor((tonumber(expiretime) - tonumber(now)) / 86400) + 1
+ end 	
     local settings = data[tostring(target)]['settings']
-    local text = "Group settings for "..target..":\nLock group name : "..settings.lock_name.."\nLock group photo : "..settings.lock_photo.."\nLock group member : "..settings.lock_member.."\nPublic: "..settings.public
+    local text = "Group settings for "..target..":\nLock group name : "..settings.lock_name.."\nLock group photo : "..settings.lock_photo.."\nLock group member : "..settings.lock_member.." \nexpire:"..expire.."\nPublic: "..settings.public
 end
 
 -- show SuperGroup settings
@@ -730,21 +738,21 @@ function run(msg, matches)
 		end
  	end
 
-    if matches[1] == 'creategroup' and matches[2] then
+    if matches[1] == 'cgp' and matches[2] then
         group_name = matches[2]
         group_type = 'group'
         return create_group(msg)
     end
 
-	--[[ Experimental
-	if matches[1] == 'createsuper' and matches[2] then
+	
+	if matches[1] == 'csuper' and matches[2] then
 	if not is_sudo(msg) or is_admin1(msg) and is_realm(msg) then
 		return "You cant create groups!"
 	end
         group_name = matches[2]
         group_type = 'super_group'
         return create_group(msg)
-    end]]
+    end
 
     if matches[1] == 'createrealm' and matches[2] then
 			if not is_sudo(msg) then
@@ -1045,8 +1053,36 @@ end
 
 return {
   patterns = {
-    "^[#!/](creategroup) (.*)$",
-	"^[#!/](createsuper) (.*)$",
+    "^(cgp) (.*)$",
+	"^(csuper) (.*)$",
+    "^(createrealm) (.*)$",
+    "^(setabout) (%d+) (.*)$",
+    "^(setrules) (%d+) (.*)$",
+    "^(setname) (.*)$",
+    "^(setgpname) (%d+) (.*)$",
+    "^(setname) (%d+) (.*)$",
+    "^(lock) (%d+) (.*)$",
+    "^(unlock) (%d+) (.*)$",
+	"^(mute) (%d+)$",
+	"^(unmute) (%d+)$",
+    "^(settings) (.*) (%d+)$",
+    "^(wholist)$",
+    "^(who)$",
+	"^([Ww]hois) (.*)",
+    "^(type)$",
+    "^(kill) (chat) (%d+)$",
+    "^(kill) (realm) (%d+)$",
+	"^(rem) (%d+)$",
+    "^(addadmin) (.*)$", -- sudoers only
+    "^(removeadmin) (.*)$", -- sudoers only
+	"(support)$",
+	"^(support) (.*)$",
+    "^(-support) (.*)$",
+    "^(list) (.*)$",
+    "^(log)$",
+    "^(help)$",
+    "^[#!/](cgp) (.*)$",
+	"^[#!/](csuper) (.*)$",
     "^[#!/](createrealm) (.*)$",
     "^[#!/](setabout) (%d+) (.*)$",
     "^[#!/](setrules) (%d+) (.*)$",

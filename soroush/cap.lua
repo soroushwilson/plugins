@@ -3,7 +3,9 @@ local function action_by_reply22(extra, success, result)
 if result.media then
 
 
-return  send_msg(extra.receiver, 'متن زیر عکس👇👇\n\n_______________________\n'.. result.media.caption, ok_cb, true)
+return  send_msg(extra.receiver, '<code>متن زیر عکس :</code>\n\n_______________________\n'.. result.media.caption, ok_cb, true)
+      else
+      return "فاقد کپشن میباشد"
 end
 if result.service then
 return  send_msg(extra.receiver, result.service.type, ok_cb, true)
@@ -25,7 +27,7 @@ end
 
 return {
   description = "Simplest plugin ever!",
-  usage = "!echo [whatever]: echoes the msg",
+  usage = "!cap : با ریپلی کردن روی عکس متن زیر ان را دریافت کنید",
   patterns = {
     "^[!/]cap$",
 

@@ -61,7 +61,7 @@ end
     end
 end
 local function run(msg, matches)
-local chat_id = msg.to.id
+local chat_id = msg.to.peer_id
 --return chat_stat(chat_id)
   resolve_username(msg.from.username, rsusername_cb, {msg=msg})
 end
