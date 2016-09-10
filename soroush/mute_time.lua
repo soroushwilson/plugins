@@ -1,10 +1,10 @@
 --#############################
 --#           Mute All With Time Plugin           #
 --#                                                                   #
---#                  @blackwolf_admin              #
---#                  @EdBaRoO                          #
+--#                 soroush_wilson             #
+--#                                           #
 --#                                                                #
---#                @shieldTM                           #
+--#                                        #
 --###########################
 do
 local function pre_process(msg)
